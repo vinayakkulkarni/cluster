@@ -26,7 +26,10 @@ jobs:
           check-latest: true
           cache: 'npm'
 
-      - name: Generate Docs using ReDoc 🥳
+      - name: Install dependencies 🚀
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Generate static site 🐛
         run: npm run build
 
       - name: Deploy to GitHub Pages
