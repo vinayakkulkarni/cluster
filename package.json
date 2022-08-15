@@ -51,7 +51,7 @@
     "prettier": "^2.7.1",
     "sass": "^1.54.4",
     "start-server-and-test": "^1.14.0",
-    "stylelint": "^14.9.1",
+    "stylelint": "^14.10.0",
     "stylelint-config-prettier": "^9.0.3",
     "stylelint-config-recommended-vue": "^1.4.0",
     "stylelint-config-standard": "^27.0.0",
