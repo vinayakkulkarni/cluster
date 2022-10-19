@@ -26,7 +26,7 @@
   "dependencies": {
     "mapbox-gl": "1.13.2",
     "v-mapbox": "3.3.1",
-    "vue": "^3.2.40"
+    "vue": "^3.2.41"
   },
   "devDependencies": {
     "@commitlint/cli": "^17.1.2",
