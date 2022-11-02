@@ -29,7 +29,12 @@
 </template>
 
 <script lang="ts">
-  import type { AnyLayer, GeoJSONSourceRaw, Map, MapboxOptions } from 'mapbox-gl';
+  import type {
+    AnyLayer,
+    GeoJSONSourceRaw,
+    Map,
+    MapboxOptions,
+  } from 'mapbox-gl';
   import VMap, { VLayerMapboxGeojson } from 'v-mapbox';
   import { computed, reactive, ref } from 'vue';
 
