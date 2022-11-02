@@ -29,7 +29,7 @@
 </template>
 
 <script lang="ts">
-  import type { Map } from 'mapbox-gl';
+  import type { AnyLayer, GeoJSONSourceRaw, Map, MapboxOptions } from 'mapbox-gl';
   import VMap, { VLayerMapboxGeojson } from 'v-mapbox';
   import { computed, reactive, ref } from 'vue';
 
@@ -57,7 +57,7 @@
           hash: false,
           minPitch: 0,
           maxPitch: 60,
-        },
+        } as MapboxOptions,
         ui: {
           loaded: false,
           styleChanged: false,
@@ -73,7 +73,7 @@
           cluster: true,
           clusterMaxZoom: 14, // Max zoom to cluster points on
           clusterRadius: 50, // Radius of each cluster when clustering points (defaults to 50)
-        },
+        } as GeoJSONSourceRaw,
         circleLayer: {
           id: 'clusters',
           type: 'circle',
@@ -104,7 +104,7 @@
               40,
             ],
           },
-        },
+        } as AnyLayer,
         countLayer: {
           id: 'cluster-count',
           type: 'symbol',
@@ -115,7 +115,7 @@
             'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
             'text-size': 12,
           },
-        },
+        } as AnyLayer,
         pointLayer: {
           id: 'unclustered-point',
           type: 'circle',
@@ -127,7 +127,7 @@
             'circle-stroke-width': 1,
             'circle-stroke-color': '#fff',
           },
-        },
+        } as AnyLayer,
       });
 
       const loaded = computed(() => state.ui.loaded || state.ui.styleChanged);
