@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@commitlint/cli": "^17.4.2",
-    "@commitlint/config-conventional": "^17.4.2",
+    "@commitlint/config-conventional": "^17.4.3",
     "@rushstack/eslint-patch": "^1.2.0",
     "@types/jsdom": "^21.1.0",
     "@types/node": "^18.13.0",
