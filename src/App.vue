@@ -30,15 +30,15 @@
 
 <script lang="ts">
   import type {
-    AnyLayer,
-    GeoJSONSourceRaw,
+    LayerSpecification,
+    GeoJSONSourceSpecification,
     Map,
-    MapboxOptions,
-  } from 'mapbox-gl';
+    MapOptions,
+  } from 'maplibre-gl';
   import VMap, { VLayerMapboxGeojson } from 'v-mapbox';
-  import { computed, reactive, ref } from 'vue';
+  import { computed, reactive, ref, defineComponent } from 'vue';
 
-  export default {
+  export default defineComponent({
     name: 'App',
     components: {
       VMap,
@@ -47,69 +47,93 @@
     setup() {
       const state = reactive({
         map: {
-          container: 'map2',
-          accessToken:
-            'pk.eyJ1Ijoic29jaWFsZXhwbG9yZXIiLCJhIjoiREFQbXBISSJ9.dwFTwfSaWsHvktHrRtpydQ',
-          style: 'mapbox://styles/mapbox/streets-v11?optimize=true',
-          // style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+          container: 'map',
+          style:
+            'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
           center: [79.0882, 21.1458],
           zoom: 4,
-          maxZoom: 22,
-          crossSourceCollisions: false,
-          failIfMajorPerformanceCaveat: false,
-          attributionControl: false,
-          preserveDrawingBuffer: true,
-          hash: false,
-          minPitch: 0,
-          maxPitch: 60,
-        } as MapboxOptions,
+        } as MapOptions,
         ui: {
           loaded: false,
           styleChanged: false,
           tilesLoaded: false,
         },
       });
+
       const cluster = ref({
         source: {
           type: 'geojson',
-          // Point to GeoJSON data. This example visualizes all M1.0+ earthquakes
-          // from 12/22/15 to 1/21/16 as logged by USGS' Earthquake hazards program.
-          data: 'https://docs.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson',
-          cluster: true,
-          clusterMaxZoom: 14, // Max zoom to cluster points on
-          clusterRadius: 50, // Radius of each cluster when clustering points (defaults to 50)
-        } as GeoJSONSourceRaw,
+          data: 'https://maplibre.org/maplibre-gl-js-docs/assets/earthquakes.geojson',
+        } as GeoJSONSourceSpecification,
         circleLayer: {
-          id: 'clusters',
-          type: 'circle',
+          id: 'earthquakes-heat',
+          type: 'heatmap',
           source: 'earthquakes',
-          filter: ['has', 'point_count'],
+          maxzoom: 9,
           paint: {
-            // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
-            // with three steps to implement three types of circles:
-            //   * Blue, 20px circles when point count is less than 100
-            //   * Yellow, 30px circles when point count is between 100 and 750
-            //   * Pink, 40px circles when point count is greater than or equal to 750
-            'circle-color': [
-              'step',
-              ['get', 'point_count'],
-              '#51bbd6',
-              100,
-              '#f1f075',
-              750,
-              '#f28cb1',
+            // Increase the heatmap weight based on frequency and property magnitude
+            'heatmap-weight': [
+              'interpolate',
+              ['linear'],
+              ['get', 'mag'],
+              0,
+              0,
+              6,
+              1,
             ],
-            'circle-radius': [
-              'step',
-              ['get', 'point_count'],
+            // Increase the heatmap color weight weight by zoom level
+            // heatmap-intensity is a multiplier on top of heatmap-weight
+            'heatmap-intensity': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              0,
+              1,
+              9,
+              3,
+            ],
+            // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+            // Begin color ramp at 0-stop with a 0-transparancy color
+            // to create a blur-like effect.
+            'heatmap-color': [
+              'interpolate',
+              ['linear'],
+              ['heatmap-density'],
+              0,
+              'rgba(33,102,172,0)',
+              0.2,
+              'rgb(103,169,207)',
+              0.4,
+              'rgb(209,229,240)',
+              0.6,
+              'rgb(253,219,199)',
+              0.8,
+              'rgb(239,138,98)',
+              1,
+              'rgb(178,24,43)',
+            ],
+            // Adjust the heatmap radius by zoom level
+            'heatmap-radius': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              0,
+              2,
+              9,
               20,
-              100,
-              30,
-              750,
-              40,
+            ],
+            // Transition from heatmap to circle layer by zoom level
+            'heatmap-opacity': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              7,
+              1,
+              9,
+              0,
             ],
           },
-        } as AnyLayer,
+        } as LayerSpecification,
         countLayer: {
           id: 'cluster-count',
           type: 'symbol',
@@ -120,24 +144,52 @@
             'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
             'text-size': 12,
           },
-        } as AnyLayer,
+        } as LayerSpecification,
         pointLayer: {
-          id: 'unclustered-point',
+          id: 'earthquakes-point',
           type: 'circle',
           source: 'earthquakes',
-          filter: ['!', ['has', 'point_count']],
+          minzoom: 7,
           paint: {
-            'circle-color': '#11b4da',
-            'circle-radius': 4,
+            // Size circle radius by earthquake magnitude and zoom level
+            'circle-radius': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              7,
+              ['interpolate', ['linear'], ['get', 'mag'], 1, 1, 6, 4],
+              16,
+              ['interpolate', ['linear'], ['get', 'mag'], 1, 5, 6, 50],
+            ],
+            // Color circle by earthquake magnitude
+            'circle-color': [
+              'interpolate',
+              ['linear'],
+              ['get', 'mag'],
+              1,
+              'rgba(33,102,172,0)',
+              2,
+              'rgb(103,169,207)',
+              3,
+              'rgb(209,229,240)',
+              4,
+              'rgb(253,219,199)',
+              5,
+              'rgb(239,138,98)',
+              6,
+              'rgb(178,24,43)',
+            ],
+            'circle-stroke-color': 'white',
             'circle-stroke-width': 1,
-            'circle-stroke-color': '#fff',
+            // Transition from heatmap to circle layer by zoom level
+            'circle-opacity': ['interpolate', ['linear'], ['zoom'], 7, 0, 8, 1],
           },
-        } as AnyLayer,
+        } as LayerSpecification,
       });
 
       const loaded = computed(() => state.ui.loaded || state.ui.styleChanged);
 
-      function onMapLoaded(map: Map) {
+      const onMapLoaded = (map: Map) => {
         const events = [
           'idle',
           'moveend',
@@ -173,7 +225,7 @@
           });
         });
         state.ui.loaded = true;
-      }
+      };
 
       return {
         state,
@@ -182,11 +234,11 @@
         onMapLoaded,
       };
     },
-  };
+  });
 </script>
 
 <style lang="scss">
-  @import 'mapbox-gl/dist/mapbox-gl.css';
+  @import 'maplibre-gl/dist/maplibre-gl.css';
   @import 'v-mapbox/dist/v-mapbox.css';
   html,
   body {
