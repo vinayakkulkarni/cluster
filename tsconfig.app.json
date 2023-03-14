@@ -9,7 +9,6 @@
       "@/*": ["./src/*"]
     },
     "types": [
-      "@types/mapbox-gl",
       "v-mapbox"
     ],
     "jsx": "preserve"
