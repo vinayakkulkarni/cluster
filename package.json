@@ -33,7 +33,7 @@
     "@commitlint/config-conventional": "^17.6.1",
     "@rushstack/eslint-patch": "^1.2.0",
     "@types/jsdom": "^21.1.1",
-    "@types/node": "^20.1.0",
+    "@types/node": "^20.1.1",
     "@vinayakkulkarni/prettier-config-vue": "^1.0.0",
     "@vitejs/plugin-vue": "^4.2.1",
     "@vue/eslint-config-prettier": "^7.1.0",
